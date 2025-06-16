@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Dashboard Interativo: React e Tailwind em Tempo Real </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Stone, Muted Teal) -->
+    <!-- Application Structure Plan: A aplicação é estruturada em seções temáticas e interativas que transformam o relatório técnico em uma experiência de aprendizado explorável. A navegação permite saltar entre conceitos, desde os pilares fundamentais (React+Tailwind) até um "Dashboard em Ação" que serve como peça central e prática. Este design não linear, focado em módulos interativos (seleção de protocolo, comparação de bibliotecas de estado, laboratório de otimização), foi escolhido para aumentar o engajamento e a compreensão do usuário, permitindo que ele explore os conceitos no seu próprio ritmo, em vez de seguir uma leitura passiva e linear. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Comparação de Protocolos (SSE vs WebSockets) -> Goal: Compare -> Viz/Presentation: Botões interativos -> Interaction: Clique para revelar prós, contras e casos de uso -> Justification: Torna a decisão arquitetônica abstrata em uma escolha tangível e clara -> Library/Method: Vanilla JS DOM manipulation.
+        - Report Info: Comparação de Bibliotecas de Estado -> Goal: Compare -> Viz/Presentation: Cartões interativos em grade -> Interaction: Clique no cartão para ver detalhes (complexidade, desempenho) -> Justification: Transforma uma tabela de dados densa em uma exploração visual e autodirigida -> Library/Method: Vanilla JS.
+        - Report Info: Atualizações de dados em tempo real -> Goal: Demonstrate Change -> Viz/Presentation: Gráfico de linha com atualização contínua -> Interaction: Observação passiva do fluxo de dados simulado -> Justification: Demonstra o conceito central do relatório de forma prática e visual -> Library/Method: Chart.js com `setInterval`.
+        - Report Info: Otimização (Throttling) -> Goal: Demonstrate Impact -> Viz/Presentation: Botão de alternância no dashboard -> Interaction: Ativar/desativar para ver o efeito na suavidade da atualização do gráfico -> Justification: Mostra o impacto direto e perceptível de uma técnica de otimização -> Library/Method: Vanilla JS, custom throttle function.
+        - Report Info: Arquitetura (Atomic Design) -> Goal: Organize/Explain -> Viz/Presentation: Diagrama simples feito com HTML/Tailwind -> Interaction: Nenhuma, visual estático -> Justification: Ilustra um conceito hierárquico de forma clara e leve, sem a necessidade de imagens ou bibliotecas externas -> Library/Method: HTML/Tailwind CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 300px; max-height: 40vh; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link.active { color: #0d9488; border-bottom-color: #0d9488; }
+        .tech-card { transition: transform 0.3s, box-shadow 0.3s; }
+        .tech-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-stone-200">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-teal-700">Dashboard Interativo</h1>
+                <div class="hidden sm:flex sm:space-x-8">
+                    <a href="#introduction" class="nav-link text-stone-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Introdução</a>
+                    <a href="#dashboard" class="nav-link text-stone-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Dashboard</a>
+                    <a href="#protocols" class="nav-link text-stone-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Protocolos</a>
+                    <a href="#state" class="nav-link text-stone-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Estado</a>
+                    <a href="#optimization" class="nav-link text-stone-600 hover:text-teal-600 border-b-2 border-transparent pb-1">Otimização</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <section id="introduction" class="text-center mb-24 scroll-mt-20">
+            <h2 class="text-4xl font-bold text-stone-900 mb-4">Construindo UIs Dinâmicas para Dados em Tempo Real</h2>
+            <p class="max-w-3xl mx-auto text-lg text-stone-600">
+                Esta aplicação demonstra os conceitos chave do relatório sobre a construção de interfaces de usuário de alto desempenho com React e Tailwind CSS. Explore as seções para entender as decisões arquitetônicas por trás de um dashboard de dados em tempo real, desde a escolha do protocolo de comunicação até as técnicas de otimização de performance.
+            </p>
+        </section>
+
+        <section id="dashboard" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">Dashboard em Ação</h2>
+                <p class="max-w-2xl mx-auto mt-2 text-stone-600">
+                    Este é um dashboard simulado que visualiza um fluxo de dados em tempo real. Use os controles abaixo para ver como diferentes tecnologias e otimizações podem impactar a performance e a experiência do usuário. Os dados são atualizados a cada segundo para simular um feed ao vivo.
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="flex flex-col">
+                        <label for="chart-library" class="text-sm font-medium text-stone-700 mb-2">Simular Biblioteca de Gráfico</label>
+                        <select id="chart-library" class="w-full p-2 border border-stone-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+                            <option value="apexcharts">React ApexCharts</option>
+                            <option value="recharts">Recharts</option>
+                            <option value="scichart">SciChart</option>
+                        </select>
+                    </div>
+                     <div class="flex flex-col justify-end">
+                        <label for="throttle-toggle" class="text-sm font-medium text-stone-700 mb-2">Otimização de Performance</label>
+                        <button id="throttle-toggle" class="w-full p-2 border border-stone-300 rounded-md shadow-sm bg-gray-200">
+                            Throttling: Desativado
+                        </button>
+                    </div>
+                    <div id="chart-library-info" class="md:col-span-3 lg:col-span-1 p-4 bg-stone-100 rounded-lg text-sm text-stone-700">
+                        Selecione uma biblioteca para ver sua descrição e caso de uso ideal.
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <h3 class="font-semibold mb-2">Atividade da Rede (Simulado)</h3>
+                        <div class="chart-container">
+                            <canvas id="realtime-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-2">Distribuição de Tráfego</h3>
+                         <div class="chart-container !h-64 md:!h-80">
+                            <canvas id="doughnut-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="protocols" class="mb-24 scroll-mt-20">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">O Ciclo de Vida dos Dados: Protocolos de Comunicação</h2>
+                <p class="max-w-2xl mx-auto mt-2 text-stone-600">
+                    A escolha do protocolo para transportar dados do servidor para o cliente é uma decisão arquitetônica fundamental. A interatividade da sua aplicação dita qual tecnologia é a mais adequada. Clique nas opções abaixo para comparar WebSockets e Server-Sent Events (SSE).
+                </p>
+            </div>
+            <div class="flex justify-center gap-4 mb-8">
+                <button data-protocol="sse" class="protocol-btn p-3 px-6 bg-white border-2 border-teal-600 text-teal-600 font-semibold rounded-lg shadow-sm">Server-Sent Events (SSE)</button>
+                <button data-protocol="websockets" class="protocol-btn p-3 px-6 bg-white border-2 border-stone-300 text-stone-700 font-semibold rounded-lg shadow-sm">WebSockets</button>
+            </div>
+            <div id="protocol-info" class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            </div>
+        </section>
+
+        <section id="state" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">A Batalha do Gerenciamento de Estado</h2>
+                <p class="max-w-2xl mx-auto mt-2 text-stone-600">
+                    Em uma aplicação com dados que mudam constantemente, gerenciar o estado de forma eficiente é crucial para evitar re-renderizações desnecessárias e manter a UI performática. Aqui estão algumas das bibliotecas mais populares e suas características.
+                </p>
+            </div>
+            <div id="state-management-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+            </div>
+        </section>
+        
+        <section id="optimization" class="mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-stone-900">Laboratório de Otimização</h2>
+                <p class="max-w-2xl mx-auto mt-2 text-stone-600">
+                    Garantir uma experiência fluida requer mais do que apenas código funcional. Estas técnicas são essenciais para otimizar o desempenho de aplicações React em tempo real, especialmente ao lidar com grandes volumes de dados ou atualizações de alta frequência.
+                </p>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Técnicas de Otimização</h3>
+                    <ul id="optimization-list" class="space-y-2"></ul>
+                </div>
+                <div id="optimization-details" class="bg-white p-6 rounded-xl shadow-lg border border-stone-200">
+                    <h4 class="font-bold text-lg mb-2">Selecione uma técnica</h4>
+                    <p class="text-stone-600">Clique em um item da lista para ver sua descrição e quando usá-lo.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-stone-100 border-t border-stone-200 mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-stone-500">
+            <p>&copy; 2025 Aplicação Interativa. Gerado com base no relatório técnico.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const appState = {
+                isThrottlingEnabled: false,
+                chartUpdateInterval: null,
+            };
+
+            const dataStore = {
+                protocols: {
+                    sse: {
+                        title: 'Server-Sent Events (SSE)',
+                        description: 'Permite que um servidor envie atualizações em tempo real para clientes através de uma única conexão HTTP. A comunicação é <strong>unidirecional</strong> (apenas do servidor para o cliente).',
+                        pros: ['Simples de implementar', 'Reconexão automática', 'Usa HTTP padrão (amigável a firewalls)'],
+                        cons: ['Comunicação apenas unidirecional', 'Limites de conexões simultâneas por navegador'],
+                        useCase: 'Ideal para feeds de notícias, dashboards de monitoramento, tickers de ações e notificações - cenários onde o cliente principalmente recebe dados.'
+                    },
+                    websockets: {
+                        title: 'WebSockets',
+                        description: 'Oferece comunicação <strong>full-duplex (bidirecional)</strong> e persistente entre cliente e servidor sobre uma única conexão TCP.',
+                        pros: ['Comunicação bidirecional em tempo real', 'Baixa sobrecarga após o handshake inicial', 'Altamente interativo'],
+                        cons: ['Mais complexo de configurar', 'Requer tratamento manual de reconexão'],
+                        useCase: 'Perfeito para aplicações de chat, jogos multiplayer, ferramentas de edição colaborativa e qualquer cenário que exija interação contínua nos dois sentidos.'
+                    }
+                },
+                stateManagement: [
+                    { name: 'Context API', concept: 'Embutido no React, evita "prop drilling".', performance: 'Pode causar re-renderizações generalizadas se não otimizado.', useCase: 'Ideal para estado global simples e atualizações infrequentes.' },
+                    { name: 'Redux Toolkit', concept: 'Fluxo de dados previsível e unidirecional.', performance: 'Bom com memoização (seletores), robusto para apps complexos.', useCase: 'Aplicações de grande escala com fluxos de dados complexos.' },
+                    { name: 'Zustand', concept: 'Leve, baseado em hooks, com boilerplate mínimo.', performance: 'Altamente otimizado com re-renderizações seletivas.', useCase: 'Aplicações de médio a grande porte que precisam de eficiência sem a complexidade do Redux.' },
+                    { name: 'Jotai', concept: 'Modelo de estado atômico com unidades pequenas e independentes.', performance: 'Excelente, com atualizações granulares (nível de átomo).', useCase: 'UIs críticas de desempenho e gráficos complexos em tempo real.' }
+                ],
+                chartLibraries: {
+                    apexcharts: { name: 'React ApexCharts', description: '<strong>Ideal para:</strong> Dashboards interativos e aplicações de monitoramento. Oferece recursos robustos como zoom, panorâmica e rolagem, e é otimizado para lidar com grandes volumes de dados de forma confiável em tempo real.', style: { borderColor: '#008FFB', backgroundColor: 'rgba(0, 143, 251, 0.2)' } },
+                    recharts: { name: 'Recharts', description: '<strong>Ideal para:</strong> Dashboards com foco na facilidade de desenvolvimento e estética limpa. Sua API declarativa baseada em componentes React torna a criação de gráficos bonita e simples para conjuntos de dados de tamanho moderado.', style: { borderColor: '#8884d8', backgroundColor: 'rgba(136, 132, 216, 0.2)' } },
+                    scichart: { name: 'SciChart', description: '<strong>Ideal para:</strong> Aplicações empresariais e científicas de altíssimo desempenho. Construído para renderizar milhões ou até bilhões de pontos de dados em tempo real, é a escolha para domínios críticos como finanças e telemetria.', style: { borderColor: '#FF6600', backgroundColor: 'rgba(255, 102, 0, 0.2)' } }
+                },
+                 optimizations: [
+                    { name: 'React.memo', description: 'Memoiza componentes funcionais para evitar re-renderizações se as suas propriedades (props) não mudaram. Essencial para componentes "puros" que são renderizados com frequência.', useCase: 'Componentes de UI estáticos ou que mudam lentamente dentro de um dashboard dinâmico.' },
+                    { name: 'useMemo', description: 'Armazena em cache o resultado de cálculos caros. A função só é re-executada se uma de suas dependências mudar.', useCase: 'Filtrar ou transformar grandes conjuntos de dados para um gráfico antes de renderizá-lo.' },
+                    { name: 'useCallback', description: 'Memoiza definições de funções, para que a mesma instância da função seja passada para componentes filhos, evitando que eles re-renderizem desnecessariamente.', useCase: 'Passar manipuladores de eventos para componentes filhos que são memoizados com `React.memo`.' },
+                    { name: 'Virtualização', description: 'Renderiza apenas os itens visíveis em uma lista ou tabela longa. À medida que o usuário rola, novos itens são renderizados e os antigos são removidos.', useCase: 'Feeds de dados em tempo real com milhares de entradas, tabelas de logs ou qualquer lista longa.' },
+                ]
+            };
+
+            const chartInstances = {};
+
+            const createListFromData = (items, targetElementId, itemClasses) => {
+                const list = document.getElementById(targetElementId);
+                list.innerHTML = '';
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = itemClasses;
+                    li.textContent = item;
+                    list.appendChild(li);
+                });
+            };
+            
+            const displayProtocolInfo = (protocolKey) => {
+                const protocol = dataStore.protocols[protocolKey];
+                const container = document.getElementById('protocol-info');
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200 animate-fade-in">
+                        <h3 class="font-bold text-lg mb-2 text-teal-700">${protocol.title}</h3>
+                        <p class="text-stone-600 mb-4">${protocol.description}</p>
+                        <h4 class="font-semibold mb-2">Prós:</h4>
+                        <ul id="pros-list-${protocolKey}" class="list-disc list-inside space-y-1 text-stone-600 mb-4"></ul>
+                        <h4 class="font-semibold mb-2">Contras:</h4>
+                        <ul id="cons-list-${protocolKey}" class="list-disc list-inside space-y-1 text-stone-600 mb-4"></ul>
+                    </div>
+                    <div class="bg-teal-50 p-6 rounded-lg shadow-inner">
+                        <h4 class="font-semibold mb-2 text-teal-800">Caso de Uso Ideal</h4>
+                        <p class="text-teal-900">${protocol.useCase}</p>
+                    </div>
+                `;
+                createListFromData(protocol.pros, `pros-list-${protocolKey}`, 'ml-4');
+                createListFromData(protocol.cons, `cons-list-${protocolKey}`, 'ml-4');
+
+                document.querySelectorAll('.protocol-btn').forEach(btn => {
+                    btn.classList.remove('bg-teal-600', 'text-white', 'border-teal-600');
+                    btn.classList.add('bg-white', 'text-stone-700', 'border-stone-300');
+                    if(btn.dataset.protocol === protocolKey) {
+                        btn.classList.add('bg-teal-600', 'text-white', 'border-teal-600');
+                        btn.classList.remove('bg-white', 'text-stone-700', 'border-stone-300');
+                    }
+                });
+            };
+
+            const populateStateCards = () => {
+                const container = document.getElementById('state-management-cards');
+                container.innerHTML = dataStore.stateManagement.map(lib => `
+                    <div class="tech-card bg-white p-6 rounded-xl shadow-lg border border-stone-200">
+                        <h3 class="font-bold text-xl mb-2 text-teal-700">${lib.name}</h3>
+                        <p class="text-stone-600 mb-3"><strong class="font-semibold">Conceito:</strong> ${lib.concept}</p>
+                        <p class="text-stone-600 mb-3"><strong class="font-semibold">Performance:</strong> ${lib.performance}</p>
+                        <p class="text-stone-600"><strong class="font-semibold">Uso Ideal:</strong> ${lib.useCase}</p>
+                    </div>
+                `).join('');
+            };
+
+            const populateOptimizationList = () => {
+                const list = document.getElementById('optimization-list');
+                list.innerHTML = dataStore.optimizations.map((opt, index) => `
+                    <li>
+                        <button data-index="${index}" class="optimization-item w-full text-left p-3 rounded-md hover:bg-stone-200 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            ${opt.name}
+                        </button>
+                    </li>
+                `).join('');
+
+                document.querySelectorAll('.optimization-item').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.currentTarget.dataset.index;
+                        displayOptimizationDetails(index);
+                        document.querySelectorAll('.optimization-item').forEach(b => b.classList.remove('bg-teal-100', 'text-teal-800', 'font-semibold'));
+                        e.currentTarget.classList.add('bg-teal-100', 'text-teal-800', 'font-semibold');
+                    });
+                });
+            };
+
+            const displayOptimizationDetails = (index) => {
+                const opt = dataStore.optimizations[index];
+                const container = document.getElementById('optimization-details');
+                container.innerHTML = `
+                    <h4 class="font-bold text-lg mb-2 text-teal-700">${opt.name}</h4>
+                    <p class="text-stone-600 mb-4">${opt.description}</p>
+                    <div class="bg-teal-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-teal-800 mb-1">Quando Usar:</h5>
+                        <p class="text-teal-900">${opt.useCase}</p>
+                    </div>
+                `;
+            };
+
+            const initCharts = () => {
+                const lineCtx = document.getElementById('realtime-chart').getContext('2d');
+                chartInstances.line = new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({ length: 30 }, (_, i) => i + 1),
+                        datasets: [{
+                            label: 'Tráfego (MB/s)',
+                            data: Array.from({ length: 30 }, () => Math.random() * 80 + 10),
+                            borderColor: '#0d9488',
+                            backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 100 } },
+                        animation: { duration: 250 }
+                    }
+                });
+
+                const doughnutCtx = document.getElementById('doughnut-chart').getContext('2d');
+                chartInstances.doughnut = new Chart(doughnutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['API Gateway', 'Serviços Web', 'Banco de Dados', 'CDN'],
+                        datasets: [{
+                            label: 'Distribuição',
+                            data: [45, 25, 15, 15],
+                            backgroundColor: ['#0d9488', '#14b8a6', '#5eead4', '#99f6e4'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                     options: { responsive: true, maintainAspectRatio: false }
+                });
+
+                updateChartLibraryStyle('apexcharts');
+            };
+
+            const throttle = (func, limit) => {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                }
+            };
+            
+            const updateLineChartData = () => {
+                const chart = chartInstances.line;
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[0].data.push(Math.random() * 80 + 10);
+                chart.update('none');
+            };
+
+            const throttledUpdate = throttle(updateLineChartData, 1000);
+
+            const startChartUpdates = () => {
+                if(appState.chartUpdateInterval) clearInterval(appState.chartUpdateInterval);
+                appState.chartUpdateInterval = setInterval(() => {
+                    if(appState.isThrottlingEnabled) {
+                        throttledUpdate();
+                    } else {
+                        updateLineChartData();
+                    }
+                }, 500); 
+            };
+            
+            const setupEventListeners = () => {
+                document.querySelectorAll('.protocol-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => displayProtocolInfo(e.currentTarget.dataset.protocol));
+                });
+                
+                const chartLibrarySelect = document.getElementById('chart-library');
+                chartLibrarySelect.addEventListener('change', (e) => {
+                    updateChartLibraryStyle(e.target.value);
+                });
+
+                const throttleToggle = document.getElementById('throttle-toggle');
+                throttleToggle.addEventListener('click', () => {
+                    appState.isThrottlingEnabled = !appState.isThrottlingEnabled;
+                    throttleToggle.textContent = `Throttling: ${appState.isThrottlingEnabled ? 'Ativado' : 'Desativado'}`;
+                    throttleToggle.classList.toggle('bg-green-200');
+                    throttleToggle.classList.toggle('text-green-800');
+                    throttleToggle.classList.toggle('bg-gray-200');
+                });
+
+                const navLinks = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('section');
+                
+                window.addEventListener('scroll', () => {
+                    let current = '';
+                    sections.forEach(section => {
+                        const sectionTop = section.offsetTop;
+                        if (pageYOffset >= sectionTop - 80) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href').includes(current)) {
+                            link.classList.add('active');
+                        }
+                    });
+                });
+            };
+
+            function updateChartLibraryStyle(libraryKey) {
+                const library = dataStore.chartLibraries[libraryKey];
+                const infoBox = document.getElementById('chart-library-info');
+                infoBox.innerHTML = `<h4 class="font-semibold mb-2">${library.name}</h4><p>${library.description}</p>`;
+
+                const chart = chartInstances.line;
+                if (chart) {
+                    chart.data.datasets[0].borderColor = library.style.borderColor;
+                    chart.data.datasets[0].backgroundColor = library.style.backgroundColor;
+                    chart.update();
+                }
+            }
+            
+            displayProtocolInfo('sse');
+            populateStateCards();
+            populateOptimizationList();
+            displayOptimizationDetails(0);
+            initCharts();
+            startChartUpdates();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
