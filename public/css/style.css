@@ -1,0 +1,31 @@
+  body { 
+    font-family: 'Inter', sans-serif; scroll-behavior: smooth;
+   }
+
+  .chart-container {
+     position: relative;
+      width: 100%;
+       max-width: 800px;
+        margin-left: auto;
+         margin-right: auto;
+          height: 300px;
+           max-height: 40vh; 
+        }
+
+        @media (min-width: 768px) {
+           .chart-container { height: 400px; } 
+      }
+      
+        .nav-link {
+           transition: color 0.3s, border-color 0.3s;
+         }
+        .nav-link.active {
+           color: #0d9488; border-bottom-color: #0d9488;
+         }
+        .tech-card { 
+          transition: transform 0.3s, box-shadow 0.3s;
+         }
+        .tech-card:hover { 
+          transform: translateY(-5px);
+           box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+           }
